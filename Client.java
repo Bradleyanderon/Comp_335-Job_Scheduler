@@ -139,6 +139,18 @@ public class Client
 		return holding;
 	}
 
+	//tells the server you're ready for another job
+	public void ready() {
+		String ready = "REDY\n";
+		try{
+			out.write(ready.getBytes());
+		}
+		catch(IOException i)
+		{
+			System.out.println(i);
+		}
+	}
+
     //runs the same check that is in the read function, is used as a brake for the whole program
 	//so that we are not speeding along (at the speed of light) faster than the server
 	public boolean readReady() {
@@ -154,7 +166,7 @@ public class Client
 		return false;
 	}
 
-	//ok, tell the server "ok", ok, sweet. 
+	//Sends OK to the server
  	public void ok () {
 	 String ok = "OK\n";
 	 
@@ -164,7 +176,6 @@ public class Client
 		e.printStackTrace();
 	}
  }
- 
 
 	//will fill serverList with a list of the avaliable servers that fit the criteria
  	public void openServer(String[] input) {
@@ -194,33 +205,25 @@ public class Client
     	serverList.remove(0);
     	 assignServer();
  	}
- 		
-    // asking the server for another job 
-    public void ready() {	
-    	String ready = "REDY\n";
-    	try{    		   		
-    		out.write(ready.getBytes());    		
-    	}
-    	 catch(IOException i) 
-        { 
-            System.out.println(i); 
-        }   
-    }
-   
-   public void assignServer() {
-	   String[] min = serverList.get(0);
-	   for(int i =1;i<=serverList.size()-1;i++) {
-		   String[] ser = serverList.get(i);
-		   if(!ser[0].equals(".") || !ser[0].equals(" ")) {
-			   if(Integer.parseInt(ser[4])<= Integer.parseInt(min[4])) {
-				   min = ser;
+
+ 	//will traverse the serverList to find the most suited server for handling the job that needs to be scheduled
+ 	public void assignServer() {
+    	String[] min = serverList.get(0);
+	    for(int i =1;i<=serverList.size()-1;i++) {
+	    	String[] ser = serverList.get(i);
+	    	if(!ser[0].equals(".") || !ser[0].equals(" ")) {
+	    		if(Integer.parseInt(ser[4])<= Integer.parseInt(min[4])) {
+	    			min = ser;
 			   }
 		   }
 	   }
 	   bestFitServer = min;
    }
    
-    //send jobs and other things
+    //After the first job is scheduled, this command is called repeatedly in a loop. The process for the first job is
+	//repeated, getting the job, finding all avaliable servers that fit that job, then searching for the best fit before
+	//scheduling the job. The loop terminates once the server sends NONE instead of JOBN, indicating there are no more
+	//jobs to complete
     public void schedule() {  
     	//this for loop has a catch that tries to stop the main loop continuing forever in the case that the server is doing nothing
     	for(int i=0;i<1000;i++) {
